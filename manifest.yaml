@@ -18,7 +18,8 @@ nodes:
 onInstall: 
 #####NodeRed setup########
   - cmd[${nodes.cp.master.id}]: mkdir /var/lib/jelastic/keys/letsencrypt; echo 'withExtIp=false\ndeployHook=/var/lib/jelastic/keys/letsencrypt/deployHook.sh\n' > settings-custom
-  - cmd[${nodes.cp.master.id}]: echo '#!/bin/bash\nexit 0\n' > /var/lib/jelastic/keys/letsencrypt/deployHook.sh
+  - cmd[${nodes.cp.master.id}]: echo -e '#!/bin/bash\nexit 0\n' > /var/lib/jelastic/keys/letsencrypt/deployHook.sh
+  - cmd[${nodes.cp.master.id}]: echo -e 'withExtIp=false\ndeployHook=/var/lib/jelastic/keys/letsencrypt/deployHook.sh' > /var/lib/jelastic/keys/letsencrypt/settings-custom
   - install-LE-addon
   - cmd[${nodes.cp.master.id}]: npm install -g --unsafe-perm node-red
   - cmd[${nodes.cp.master.id}]: sh ${baseUrl}/scripts/certs-replace.sh
@@ -54,6 +55,7 @@ actions:
       settings:
         test: false
         fallbackToX1: true
+      
   addNRuser:
      - cmd[${nodes.k8sm.master.id}]: kubectl get -o template service/${settings.deployName} --template='{{.spec.clusterIP}}' 
      - setGlobals:
@@ -90,4 +92,3 @@ actions:
      - return: 
          type: info
          message: ${globals.EndPointmsg}
-
