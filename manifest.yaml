@@ -2,7 +2,7 @@ type: install
 baseUrl: https://raw.githubusercontent.com/vlobzakov/rav4/master
 name: Chat-bot AI Environment
 description: Deploy Chat-bot java script application environment along with Vector Database ChromaDB and MongoDB document-oriented database
-logo: https://github.com/vlobzakov/rav4/blob/main/postgres/images/postgres-70x70.png
+logo: https://github.com/vlobzakov/rav4/blob/main/rav4/images/rava-logo.png
 
 nodes:
   - nodeType: nodejs
