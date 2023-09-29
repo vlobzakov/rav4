@@ -1,0 +1,93 @@
+type: install
+baseUrl: https://raw.githubusercontent.com/vlobzakov/rav4/master
+name: Chat-bot AI Environment
+description: Deploy Chat-bot java script application environment along with Vector Database ChromaDB and MongoDB document-oriented database
+logo: https://github.com/vlobzakov/rav4/blob/main/postgres/images/postgres-70x70.png
+
+nodes:
+  - nodeType: nodejs
+    count: 1
+    cloudlets: 10
+  - nodeType: dockerengine
+    count: 1
+    cloudlets: 10
+  - nodeType: mongodb-dockerized
+    count: 1
+    cloudlets: 10
+ 
+onInstall: 
+#####NodeRed setup########
+  - cmd[${nodes.cp.master.id}]: mkdir /var/lib/jelastic/keys/letsencrypt; echo 'withExtIp=false\ndeployHook=/var/lib/jelastic/keys/letsencrypt/deployHook.sh\n' > settings-custom
+  - cmd[${nodes.cp.master.id}]: echo '#!/bin/bash\nexit 0\n' > /var/lib/jelastic/keys/letsencrypt/deployHook.sh
+  - install-LE-addon
+  - cmd[${nodes.cp.master.id}]: npm install -g --unsafe-perm node-red
+  - cmd[${nodes.cp.master.id}]: sh $baseUrl/scripts/certs-replace.sh
+
+globals:
+  noderedPort: 1880
+
+settings:
+    fields:
+        - type: displayfield
+          caption: Useful info
+          hideLabel: true
+          markup: Set up credentials to access the NodeRed Low-code Development Environment
+        - type: string
+          name: nr_user
+          caption: NR username
+        - type: string
+          name: nr_pwd
+          caption: NR password
+          inputType: password
+
+buttons:
+  - caption: Add NodeRed User
+    action: addNRuser
+  - caption: Change User PWD
+    action: changePWD
+
+actions:
+  install-LE-addon:
+    - install: https://github.com/jelastic-jps/lets-encrypt/blob/master/manifest.jps?_r=${fn.random}
+      nodeGroup: bl
+      skipEmail: false
+      settings:
+        test: false
+        fallbackToX1: true
+  addNRuser:
+     - cmd[${nodes.k8sm.master.id}]: kubectl get -o template service/${settings.deployName} --template='{{.spec.clusterIP}}' 
+     - setGlobals:
+        intIPmsg: You may access K8s PostgreSQL service within Kuberentes Cluster by K8s internal pod's IP ${response.out} with credentials username=${settings.db_user} and password=${settings.db_pwd}
+     - message.email.send:
+          to: "${user.email}"
+          subject: K8s PostgreSQL service access whithin Kubernetes Cluster
+          body: ${globals.intIPmsg}
+     - return: 
+         type: info
+         message: ${globals.intIPmsg}
+  changePWD:
+     - setGlobals:
+        vapIPmsg: You may access K8s PostgreSQL service within Virtuozzo Application Platform by Control Plane private IP ${nodes.k8sm.master.intIP}:${globals.noderedPort} with credentials username=${settings.db_user} and password=${settings.db_pwd}
+     - message.email.send:
+          to: "${user.email}"
+          subject: K8s PostgreSQL service access whithin Virtuozzo Appplication Platform
+          body: ${globals.vapIPmsg}
+     - return: 
+         type: info
+         message: ${globals.vapIPmsg}
+  setEndPoint:
+     - api : env.control.AddEndpoint
+       nodeId: ${nodes.cp.master.id}
+       privatePort: ${globals.noderedPort}
+       protocol: TCP
+       name: extPort
+     - setGlobals:  
+         EndPointmsg: Now your NodeRed application is publicly accessible via VAP Shared Load Balancer by node${nodes.cp.master.id}-${env.domain}:${response.object.publicPort} with credentials username=${settings.nr_user} and password=${settings.nr_pwd}
+     - message.email.send:
+          to: "${user.email}"
+          subject: NodeRed application access outside Virtuozzo Application Platform
+          body: ${globals.EndPointmsg}
+     - return: 
+         type: info
+         message: ${globals.EndPointmsg}
+
