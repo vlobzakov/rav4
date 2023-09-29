@@ -49,7 +49,7 @@ buttons:
 actions:
   install-LE-addon:
     - install: https://github.com/jelastic-jps/lets-encrypt/blob/master/manifest.jps?_r=${fn.random}
-      nodeGroup: bl
+      nodeGroup: cp
       skipEmail: false
       settings:
         test: false
