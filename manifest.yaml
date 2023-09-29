@@ -21,7 +21,7 @@ onInstall:
   - cmd[${nodes.cp.master.id}]: echo '#!/bin/bash\nexit 0\n' > /var/lib/jelastic/keys/letsencrypt/deployHook.sh
   - install-LE-addon
   - cmd[${nodes.cp.master.id}]: npm install -g --unsafe-perm node-red
-  - cmd[${nodes.cp.master.id}]: sh $baseUrl/scripts/certs-replace.sh
+  - cmd[${nodes.cp.master.id}]: sh ${baseUrl}/scripts/certs-replace.sh
 
 globals:
   noderedPort: 1880
