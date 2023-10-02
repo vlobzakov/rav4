@@ -1,5 +1,5 @@
 type: install
-baseUrl: https://raw.githubusercontent.com/vlobzakov/rav4/master
+baseUrl: https://raw.githubusercontent.com/vlobzakov/rav4/main
 name: Chat-bot AI Environment
 description: Deploy Chat-bot java script application environment along with Vector Database ChromaDB and MongoDB document-oriented database
 logo: https://github.com/vlobzakov/rav4/blob/main/images/rava-logo.png
@@ -22,7 +22,15 @@ onInstall:
   - cmd[${nodes.cp.master.id}]: echo -e 'withExtIp=false\ndeployHook=/var/lib/jelastic/keys/letsencrypt/deployHook.sh' > /var/lib/jelastic/keys/letsencrypt/settings-custom
   - install-LE-addon
   - cmd[${nodes.cp.master.id}]: npm install -g --unsafe-perm node-red
-  - cmd[${nodes.cp.master.id}]: sh ${baseUrl}/scripts/certs-replace.sh
+  - cmd[${nodes.cp.master.id}]: wget ${baseUrl}/scripts/certs-replace.sh; wget ${baseUrl}/scripts/valid_certs.js; node-red -v
+  - cmd[${nodes.cp.master.id}]: sleep 3;certs-replace.sh; pkill node-red
+  - cmd[${nodes.cp.master.id}]: sudo npm install -g pm2
+    user: root
+  - cmd[${nodes.cp.master.id}]: pm2 stop draw-game; nodered_path=$(which node-red); pm2 start $nodered_path -- -v
+  - cmd[${nodes.cp.master.id}]: sudo pm2 save; sudo pm2 startup;
+    user: root
+  
+  
 
 globals:
   noderedPort: 1880
