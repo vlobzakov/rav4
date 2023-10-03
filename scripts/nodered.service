@@ -1,0 +1,14 @@
+[Unit]
+Description=Node-red service
+
+[Service]
+User=nodejs
+WorkingDirectory=/home/jelastic/.node-red
+ExecStart=/opt/.nvm/versions/node/v16.20.2/bin/node-red
+ExecStop=pkill node-red
+StandardOutput=journal
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
