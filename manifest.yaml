@@ -8,28 +8,23 @@ nodes:
   - nodeType: nodejs
     count: 1
     cloudlets: 10
-  - nodeType: dockerengine
-    count: 1
-    cloudlets: 10
-  - nodeType: mongodb-dockerized
-    count: 1
-    cloudlets: 10
+#  - nodeType: dockerengine
+#    count: 1
+#    cloudlets: 10
+#  - nodeType: mongodb-dockerized
+#    count: 1
+#    cloudlets: 10
  
 onInstall: 
 #####NodeRed setup########
-  - cmd[${nodes.cp.master.id}]: mkdir /var/lib/jelastic/keys/letsencrypt; echo 'withExtIp=false\ndeployHook=/var/lib/jelastic/keys/letsencrypt/deployHook.sh\n' > settings-custom
-  - cmd[${nodes.cp.master.id}]: echo -e '#!/bin/bash\nexit 0\n' > /var/lib/jelastic/keys/letsencrypt/deployHook.sh
-  - cmd[${nodes.cp.master.id}]: echo -e 'withExtIp=false\ndeployHook=/var/lib/jelastic/keys/letsencrypt/deployHook.sh' > /var/lib/jelastic/keys/letsencrypt/settings-custom
+  - cmd[cp]: mkdir /var/lib/jelastic/keys/letsencrypt; echo -e 'withExtIp=false\ndeployHook=/var/lib/jelastic/keys/letsencrypt/deployHook.sh\n' > /var/lib/jelastic/keys/letsencrypt/settings-custom;echo -e '#!/bin/bash\nexit 0\n' > /var/lib/jelastic/keys/letsencrypt/deployHook.sh
   - install-LE-addon
-  - cmd[${nodes.cp.master.id}]: npm install -g --unsafe-perm node-red
-  - cmd[${nodes.cp.master.id}]: wget ${baseUrl}/scripts/certs-replace.sh; wget ${baseUrl}/scripts/valid_certs.js; node-red -v
-  - cmd[${nodes.cp.master.id}]: sleep 3;certs-replace.sh; pkill node-red
-  - cmd[${nodes.cp.master.id}]: sudo npm install -g pm2
+  - cmd[cp]: sudo npm install -g --unsafe-perm node-red
+  - cmd[cp]: wget https://raw.githubusercontent.com/vlobzakov/rav4/main/scripts/nodered.service -O /etc/systemd/system/nodered.service; systemctl start nodered.service
     user: root
-  - cmd[${nodes.cp.master.id}]: pm2 stop draw-game; nodered_path=$(which node-red); pm2 start $nodered_path -- -v
-  - cmd[${nodes.cp.master.id}]: sudo pm2 save; sudo pm2 startup;
+  - cmd[cp]: sleep 5; wget ${baseUrl}/scripts/certs-replace.sh; wget ${baseUrl}/scripts/valid_certs.js; sh certs-replace.sh
+  - cmd[cp]: systemctl restart nodered.service
     user: root
-  
   
 
 globals:
